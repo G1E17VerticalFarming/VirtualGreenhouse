@@ -7,71 +7,220 @@ package virtualgreenhouse;
 
 import API.IGreenhouse;
 import java.util.BitSet;
+import java.util.Date;
 
 /**
  *
  * @author chris
  */
 public class GreenHouse implements IGreenhouse {
-
+    
+    private double temperature = 0;
+    private double moisture = 0;
+    private double waterLevel = 0;
+    private int co2Level = 0;
+    private double plantHeight = 0.0;
+    private int fanSpeed = 0;
+    private int fertiliser = 0;
+    
+    // light level
+    private int blueLightLevel = 0;
+    private int redLightLevel = 0;
+    
+    private Date dateChecker;
+    
+    public GreenHouse() {
+        dateChecker = new Date();
+        this.GrowthRate();
+    }
+    
+    private void GrowthRate() {
+        // timeStart checks time at start of execution
+        long timeStart = dateChecker.getTime();
+        // timeSinceExe is used to only execute at specific times later than timeStart
+        long timeSinceExe = dateChecker.getTime();
+        
+        while(plantHeight < 30) {
+            if(timeSinceExe >= timeSinceExe && fertiliser < 1) {
+                timeSinceExe += 60000;
+                plantHeight++;
+            } else if(timeSinceExe >= timeSinceExe && fertiliser >= 50) {
+                timeSinceExe += 30000;
+                plantHeight++;
+                fertiliser--;
+            }
+        }
+    }
+    
     @Override
     public boolean SetTemperature(int kelvin) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        // timeTemp keeps track of time needed for execution
+        long timeTemp;
+        
+        boolean increaseTemp = true;
+        
+        // Check if kelvin is higher or lower than current temp
+        if(kelvin > temperature) {
+            timeTemp = ((int)kelvin - (int)temperature);
+        } else {
+            timeTemp = ((int)temperature - (int)kelvin);
+            increaseTemp = false;
+        }
+        
+        // timeStart checks time at start of execution
+        long timeStart = dateChecker.getTime();
+        // timeSinceExe is used to only execute at specific times later than timeStart
+        long timeSinceExe = dateChecker.getTime();
+        // finishTime is when the execution should be done
+        long finishTime = timeStart + (timeTemp * 1000);
+        
+        // While timeStart is lower than finishTime, execute and increase/decrease
+        while(timeStart <= finishTime) {
+            if(increaseTemp && dateChecker.getTime() >= timeSinceExe) {
+                timeSinceExe += 1000;
+                temperature++;
+            } else if(!increaseTemp && dateChecker.getTime() >= timeSinceExe){
+                timeSinceExe += 1000;
+                temperature--;
+            }
+        }
+        return true;
     }
 
     @Override
     public boolean SetMoisture(int moist) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        // timeTemp keeps track of time needed for execution
+        long timeTemp;
+        
+        boolean increaseMoisture = true;
+        
+        // Check if moist is higher or lower than current moisture
+        if(moist > moisture) {
+            timeTemp = ((int)moist - (int)moisture);
+        } else {
+            timeTemp = ((int)moisture - (int)moist);
+            increaseMoisture = false;
+        }
+        
+        // timeStart checks time at start of execution
+        long timeStart = dateChecker.getTime();
+        // timeSinceExe is used to only execute at specific times later than timeStart
+        long timeSinceExe = dateChecker.getTime();
+        // finishTime is when the execution should be done
+        long finishTime = timeStart + (timeTemp * 1000);
+        
+        // While timeStart is lower than finishTime, execute and increase/decrease
+        while(timeStart <= finishTime) {
+            if(increaseMoisture && dateChecker.getTime() >= timeSinceExe) {
+                timeSinceExe += 1000;
+                moisture++;
+            } else if(!increaseMoisture && dateChecker.getTime() >= timeSinceExe){
+                timeSinceExe += 1000;
+                moisture--;
+            }
+        }
+        return true;
     }
 
     @Override
     public boolean SetRedLight(int level) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if (level < 100 || level > 0) {
+            return false;
+        } else {
+            this.redLightLevel = level;
+            return true;
+        }
     }
 
     @Override
     public boolean SetBlueLight(int level) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if (level < 100 || level > 0) {
+            return false;
+        } else {
+            this.blueLightLevel = level;
+            return true;
+        }
     }
 
     @Override
     public boolean AddWater(int sec) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        // timeStart checks time at start of execution
+        long timeStart = dateChecker.getTime();
+        // timeSinceExe is used to only execute at specific times later than timeStart
+        long timeSinceExe = dateChecker.getTime();
+        // finishTime is when the execution should be done
+        long finishTime = timeStart + (sec * 1000);
+        
+        while(timeStart <= finishTime) {
+            if(dateChecker.getTime() >= timeSinceExe) {
+                timeSinceExe += 1000;
+                waterLevel++;
+            }
+        }
+        return true;
     }
 
     @Override
     public boolean AddFertiliser(int sec) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        // timeStart checks time at start of execution
+        long timeStart = dateChecker.getTime();
+        // timeSinceExe is used to only execute at specific times later than timeStart
+        long timeSinceExe = dateChecker.getTime();
+        // finishTime is when the execution should be done
+        long finishTime = timeStart + (sec * 1000);
+        
+        while(timeStart <= finishTime) {
+            if(dateChecker.getTime() >= timeSinceExe) {
+                timeSinceExe += 1000;
+                fertiliser++;
+            }
+        }
+        return true;
     }
 
     @Override
     public boolean AddCO2(int sec) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        // timeStart checks time at start of execution
+        long timeStart = dateChecker.getTime();
+        // timeSinceExe is used to only execute at specific times later than timeStart
+        long timeSinceExe = dateChecker.getTime();
+        // finishTime is when the execution should be done
+        long finishTime = timeStart + (sec * 1000);
+        
+        while(timeStart <= finishTime) {
+            if(dateChecker.getTime() >= timeSinceExe) {
+                timeSinceExe += 1000;
+                if(co2Level < 100) { 
+                    co2Level++;
+                }
+            }
+        }
+        return true;
     }
 
     @Override
     public double ReadTemp1() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return temperature;
     }
 
     @Override
     public double ReadTemp2() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return temperature;
     }
 
     @Override
     public double ReadMoist() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return moisture;
     }
 
     @Override
     public double ReadWaterLevel() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return waterLevel;
     }
 
     @Override
     public double ReadPlantHeight() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return plantHeight;
     }
 
     @Override
@@ -91,7 +240,12 @@ public class GreenHouse implements IGreenhouse {
 
     @Override
     public boolean SetFanSpeed(int speed) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if (speed < 100 || speed > 0) {
+            return false;
+        } else {
+            this.fanSpeed = speed;
+            return true;
+        }
     }
     
 }
