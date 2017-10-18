@@ -29,9 +29,18 @@ public class GreenHouse implements IGreenhouse {
     
     private Date dateChecker;
     
-    public GreenHouse() {
+    private static GreenHouse instance = null;
+    
+    protected GreenHouse() {
         dateChecker = new Date();
         this.GrowthRate();
+    }
+    
+    public static GreenHouse getInstance() {
+        if(instance == null) {
+            instance = new GreenHouse();
+        }
+        return instance;
     }
     
     private void GrowthRate() {
