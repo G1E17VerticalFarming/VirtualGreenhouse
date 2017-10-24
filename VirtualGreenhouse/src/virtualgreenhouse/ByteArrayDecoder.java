@@ -13,6 +13,7 @@ public class ByteArrayDecoder implements IMessage, ICommands {
 
     byte[] byteArray = null;
     GreenHouse gh;
+
     protected byte[] answer = new byte[125];
 
     public ByteArrayDecoder(byte[] byteArray) {
@@ -45,13 +46,12 @@ public class ByteArrayDecoder implements IMessage, ICommands {
         }
     }
 
-    public void decoder() {
+    public int decoder() {
         switch (byteArray[COMMAND]) {
             case (NO_CMD):
                 break;
             case (TEMP_SETPOINT):
                 gh.SetTemperature(this.getResultData());
-                
                 break;
             case (MOIST_SETPOINT):
                 gh.SetMoisture(this.getResultData());
@@ -72,17 +72,13 @@ public class ByteArrayDecoder implements IMessage, ICommands {
                 gh.AddCO2(this.getResultData());
                 break;
             case (READ_GREENHOUSE_TEMP):
-                gh.ReadTemp1();
-                break;
+                return (int) gh.ReadTemp1();
             case (READ_OUTDOOR_TEMP):
-                gh.ReadTemp2();
-                break;
+                return (int) gh.ReadTemp2();
             case (READ_MOISTURE):
-                gh.ReadMoist();
-                break;
+                return (int) gh.ReadMoist();
             case (READ_PLANT_HEIGHT):
-                gh.ReadPlantHeight();
-                break;
+                return (int) gh.ReadPlantHeight();
             case (GET_STATUS):
                 gh.GetStatus();
                 break;
@@ -90,5 +86,6 @@ public class ByteArrayDecoder implements IMessage, ICommands {
                 gh.SetFanSpeed(this.getResultData());
                 break;
         }
+        return 0;
     }
 }

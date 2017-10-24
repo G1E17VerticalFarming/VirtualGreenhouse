@@ -46,6 +46,13 @@ public class VirtualGreenhouse implements IMessage, ICommands {
                     
                     queue.addLast(data);
                     
+                    for (int i = 9; i <= 15; i++) {
+                        if(data[COMMAND] == i) {
+                            ByteArrayDecoder bad = new ByteArrayDecoder(data);
+                            data[DATA_START] += bad.decoder();
+                        }
+                    }
+                    
                     data[COMMAND] += 64;
                     data[DIRECTION] = 1;
                     
@@ -61,6 +68,7 @@ public class VirtualGreenhouse implements IMessage, ICommands {
 
         Runnable decoderRunnable = () -> {
             ByteArrayDecoder bad = new ByteArrayDecoder(queue.poll());
+            bad.decoder();
         };
 
         Thread connection = new Thread(UDPConnection);
