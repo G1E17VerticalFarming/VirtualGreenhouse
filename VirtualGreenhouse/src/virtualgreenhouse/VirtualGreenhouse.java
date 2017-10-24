@@ -76,7 +76,9 @@ public class VirtualGreenhouse implements IMessage, ICommands {
         //connection.setDaemon(true);
         connection.start();
         //execution.setDaemon(true);
+        if(queue.size()!=0) {
         execution.start();
+        }
 
     }
 }
