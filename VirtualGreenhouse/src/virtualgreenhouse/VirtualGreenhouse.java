@@ -28,30 +28,21 @@ import static virtualgreenhouse.IMessage.DIRECTION;
 public class VirtualGreenhouse implements IMessage, ICommands {
 
    
-    public static final int PORT = 1025;
-    public GreenHouse green = new GreenHouse();
+    
+    private GreenHouse green = new GreenHouse();
+    private static int PORT;
     String fixedServerName;
     private Connection connection;
-
-    /**
-     * @param args the command line arguments
-     * @throws java.net.SocketException
-     */
-    public GreenHouse createGreenhouse(String IPAddressName, int PORT, String name) {
-
-	GreenHouse greenhouse = new GreenHouse();
-	return greenhouse;
-    }
 
     public static void main(String[] args) throws SocketException, IOException {
 	VirtualGreenhouse vgh = new VirtualGreenhouse();
 	LinkedList<byte[]> queue = new LinkedList();
-	vgh.green.askForIP();
-	vgh.green.askForPort();
 	
-
-	GreenHouse gh = GreenHouse.getInstance();
+	GreenHouse greenhouse = new GreenHouse().getInstance();
+	greenhouse.askForPort();
+	PORT = greenhouse.getPort();
 	DatagramSocket socket = new DatagramSocket(PORT);
+	
 	
 
 	Runnable UDPConnection = () -> {
@@ -60,7 +51,8 @@ public class VirtualGreenhouse implements IMessage, ICommands {
 
 		    byte[] buffer = new byte[110];
 		    DatagramPacket packet = new DatagramPacket(buffer, buffer.length); // Create packet ready for receiving incoming UDP datagrams
-		    System.out.println("Server running on port " + PORT);
+		    System.out.println("Server running on port: " + PORT);
+		    System.out.println("Server running on ip: "+ greenhouse.getIp());
 		    socket.receive(packet);
 		    byte[] data = java.util.Arrays.copyOf(packet.getData(), packet.getLength());
 		    
@@ -88,8 +80,12 @@ public class VirtualGreenhouse implements IMessage, ICommands {
 	};
 
 	Runnable decoderRunnable = () -> {
-	    ByteArrayDecoder bad = new ByteArrayDecoder(queue.poll());
-	    bad.decoder();
+	    try {
+		ByteArrayDecoder bad = new ByteArrayDecoder(queue.poll());
+		bad.decoder();
+	    } catch (SocketException ex) {
+		Logger.getLogger(VirtualGreenhouse.class.getName()).log(Level.SEVERE, null, ex);
+	    }
 	};
 
 	Thread connection = new Thread(UDPConnection);
@@ -102,5 +98,7 @@ public class VirtualGreenhouse implements IMessage, ICommands {
 	}
 
     }
+    
+    
 
 }

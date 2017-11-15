@@ -5,6 +5,8 @@
  */
 package virtualgreenhouse;
 
+import java.net.SocketException;
+
 /**
  *
  * @author mads
@@ -12,11 +14,11 @@ package virtualgreenhouse;
 public class ByteArrayDecoder implements IMessage, ICommands {
 
     byte[] byteArray = null;
-    GreenHouse gh;
+    GreenHouse gh = new GreenHouse();
 
     protected byte[] answer = new byte[125];
 
-    public ByteArrayDecoder(byte[] byteArray) {
+    public ByteArrayDecoder(byte[] byteArray) throws SocketException {
         this.byteArray = byteArray;
         gh = GreenHouse.getInstance();
     }

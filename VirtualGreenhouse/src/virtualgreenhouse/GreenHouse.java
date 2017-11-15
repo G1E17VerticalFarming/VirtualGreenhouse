@@ -6,17 +6,27 @@
 package virtualgreenhouse;
 
 import API.IGreenhouse;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.net.Inet4Address;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.BitSet;
-import java.util.Date;
+import java.util.Date;	
+import java.util.Enumeration;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+
 
 /**
  *
  * @author chris
  */
-public class GreenHouse implements IGreenhouse {
+public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeListener{
 
     private double temperature = 0;
     private double moisture = 0;
@@ -26,7 +36,7 @@ public class GreenHouse implements IGreenhouse {
     private int fanSpeed = 0;
     private int fertiliser = 0;
     private int port = 0;
-    private String ip = "";
+    private String ip;
 
     // light level
     private int blueLightLevel = 0;
@@ -34,19 +44,12 @@ public class GreenHouse implements IGreenhouse {
 
     private Date dateChecker;
 
-    private static GreenHouse instance = null;
+    private static GreenHouse greenhouse = new GreenHouse();
+    
 
-    protected GreenHouse() {
-	dateChecker = new Date();
-	this.GrowthRate();
-
-    }
-
-    public static GreenHouse getInstance() {
-	if (instance == null) {
-	    instance = new GreenHouse();
-	}
-	return instance;
+    public static GreenHouse getInstance() throws SocketException {
+	greenhouse.setIp();
+	return greenhouse;
     }
 
     private void GrowthRate() {
@@ -263,36 +266,67 @@ public class GreenHouse implements IGreenhouse {
 	}
     }
 
-    public void askForIP() {
-
-	JFrame frame = new JFrame("InputDialog Example #1");
-	String ip = JOptionPane.showInputDialog(frame, "Which Ip do you wish to connect to?");
-
-	
-	if(JOptionPane.INPUT_VALUE_PROPERTY != ip  ){
-	    System.out.println("Something whent wrong, please try again, and this time input a valid IP");
-	}
-	
-	ip = JOptionPane.INPUT_VALUE_PROPERTY;
-	System.out.printf("The wished ip is '%s'.\n", ip);
-	System.exit(0);
-	
-	
-
-    }
     
     public void askForPort(){
+	String prompt = "";
 	JFrame frame = new JFrame("InputDialog Example #1");
-	String ip = JOptionPane.showInputDialog(frame, "Which port do you wish to connect to?");
+	prompt = JOptionPane.showInputDialog(frame, "Which port do you wish to connect to?");
 
-	
-	if((Integer.parseInt(JOptionPane.INPUT_VALUE_PROPERTY) > 1024 && Integer.parseInt(JOptionPane.INPUT_VALUE_PROPERTY) < 65536)){
+	//try {
+	if((Integer.parseInt(prompt) < 1024 || Integer.parseInt(prompt) > 65536)){
 	    System.out.println("Something whent wrong, please try again, and this time input a valid port");
+	    askForPort();
 	}
 
-	port = Integer.parseInt(JOptionPane.INPUT_VALUE_PROPERTY);
+	this.port = Integer.parseInt(prompt);
 	System.out.printf("The wished port is '%s'.\n", port);
-	System.exit(0);
+	//} catch (NumberFormatException nfe){
+	    
+	//}
+	
+    }
+    
+    
+    public int getPort(){
+	return this.port;
+    }
+    
+    private void setIp() throws SocketException{
+/*	try {
+	    ip = NetworkInterface.getNetworkInterfaces();
+	    System.out.println("The ip are: " + ip + "");
+	} catch(UnknownHostException uhe) {
+	    System.out.println("ip not set ");
+	}
+*/
+Enumeration e = NetworkInterface.getNetworkInterfaces();
+while(e.hasMoreElements())
+{
+    NetworkInterface n = (NetworkInterface) e.nextElement();
+    Enumeration ee = n.getInetAddresses();
+    while (ee.hasMoreElements())
+    {
+        InetAddress i = (InetAddress) ee.nextElement();
+	if(i.isSiteLocalAddress()){
+	System.out.println(i.getHostAddress());   
+	ip = i.getHostAddress();
+	}
+    }
+}
+}
+    
+    public String getIp(){
+	return ip;
     }
 
+    @Override
+    public void actionPerformed(ActionEvent e) {
+	throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+	throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
 }	
