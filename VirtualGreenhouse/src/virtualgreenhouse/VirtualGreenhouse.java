@@ -46,7 +46,8 @@ public class VirtualGreenhouse implements IMessage, ICommands {
     public static void main(String[] args) throws SocketException, IOException {
 	VirtualGreenhouse vgh = new VirtualGreenhouse();
 	LinkedList<byte[]> queue = new LinkedList();
-	vgh.green.activate();
+	vgh.green.askForIP();
+	vgh.green.askForPort();
 	
 
 	GreenHouse gh = GreenHouse.getInstance();

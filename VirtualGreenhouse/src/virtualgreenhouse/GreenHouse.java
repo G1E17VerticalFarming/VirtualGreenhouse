@@ -286,11 +286,11 @@ public class GreenHouse implements IGreenhouse {
 	String ip = JOptionPane.showInputDialog(frame, "Which port do you wish to connect to?");
 
 	
-	if((JOptionPane.INPUT_VALUE_PROPERTY != port){
+	if((Integer.parseInt(JOptionPane.INPUT_VALUE_PROPERTY) > 1024 && Integer.parseInt(JOptionPane.INPUT_VALUE_PROPERTY) < 65536)){
 	    System.out.println("Something whent wrong, please try again, and this time input a valid port");
 	}
 
-	port = JOptionPane.INPUT_VALUE_PROPERTY;
+	port = Integer.parseInt(JOptionPane.INPUT_VALUE_PROPERTY);
 	System.out.printf("The wished port is '%s'.\n", port);
 	System.exit(0);
     }
