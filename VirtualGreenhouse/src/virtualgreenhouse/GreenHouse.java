@@ -25,7 +25,7 @@ import java.util.Enumeration;
  */
 public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeListener {
 
-    private double temp1 = 17;
+    private double temp1 = 11;
     private double temp2 = 26;
     private double moisture = 72;
     private double waterLevel = 0;
