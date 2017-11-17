@@ -10,13 +10,16 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.sql.Connection;
+import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-
 public class VirtualGreenhouse implements IMessage, ICommands {
-
 
     private GreenHouse green = new GreenHouse();
     private static int PORT;
@@ -25,65 +28,52 @@ public class VirtualGreenhouse implements IMessage, ICommands {
 
     public static void main(String[] args) throws SocketException, IOException {
         VirtualGreenhouse vgh = new VirtualGreenhouse();
-        LinkedList<byte[]> queue = new LinkedList();
+        Queue<byte[]> queue = new ConcurrentLinkedQueue<>();
+        Queue<DatagramPacket> packetQueue = new ConcurrentLinkedQueue<>();
+        ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
         GreenHouse greenhouse = new GreenHouse().getInstance();
         greenhouse.askForPort();
         PORT = greenhouse.getPort();
         DatagramSocket socket = new DatagramSocket(PORT);
 
-
         Runnable UDPConnection = () -> {
             while (true) {
                 try {
-
                     byte[] buffer = new byte[110];
-                    DatagramPacket packet = new DatagramPacket(buffer, buffer.length); // Create packet ready for receiving incoming UDP datagrams
+                    DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
                     System.out.println("Server running on: " + greenhouse.getIp() + ":" + PORT);
                     socket.receive(packet);
                     byte[] data = java.util.Arrays.copyOf(packet.getData(), packet.getData().length);
 
-                    queue.addLast(data);
-
-                    for (int i = 9; i <= 15; i++) {
-                        if (data[COMMAND] == i) {
-                            ByteArrayDecoder bad = new ByteArrayDecoder(data);
-                            data[DATA_START] += bad.decoder();
-                        }
-                    }
-
-                    data[COMMAND] += 64;
-                    data[DIRECTION] = 1;
-
-                    DatagramPacket replyPacket = new DatagramPacket(data, data.length, packet.getAddress(), packet.getPort());
-                    socket.send(replyPacket);
-                } catch (SocketException ex) {
-                    Logger.getLogger(VirtualGreenhouse.class.getName()).log(Level.SEVERE, null, ex);
+                        queue.add(data);
+                        packetQueue.add(packet);
+                        
                 } catch (IOException ex) {
                     Logger.getLogger(VirtualGreenhouse.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         };
 
-        Runnable decoderRunnable = () -> {
-            try {
-                ByteArrayDecoder bad = new ByteArrayDecoder(queue.poll());
-                bad.decoder();
-            } catch (SocketException ex) {
-                Logger.getLogger(VirtualGreenhouse.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        };
-
         Thread connection = new Thread(UDPConnection);
-        Thread execution = new Thread(decoderRunnable);
-        //connection.setDaemon(true);
         connection.start();
-        //execution.setDaemon(true);
-        if (queue.size() != 0) {
-            execution.start();
-        }
 
+        while (true) {
+                if (!queue.isEmpty()) {
+                    System.out.println(queue.isEmpty());
+                    try {
+                        ByteArrayDecoder bad = new ByteArrayDecoder(queue.poll());
+                        byte[] returnData = bad.decoder();
+                        DatagramPacket returnPacket = packetQueue.poll();
+                        DatagramPacket replyPacket = new DatagramPacket(returnData, returnData.length, returnPacket.getAddress(), returnPacket.getPort());
+                        socket.send(replyPacket);
+                    } catch (SocketException ex) {
+                        Logger.getLogger(VirtualGreenhouse.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (IOException ex) {
+                        Logger.getLogger(VirtualGreenhouse.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        }
     }
 
-
-}

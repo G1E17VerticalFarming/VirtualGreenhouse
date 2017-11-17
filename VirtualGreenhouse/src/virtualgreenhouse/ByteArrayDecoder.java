@@ -6,6 +6,8 @@
 package virtualgreenhouse;
 
 import java.net.SocketException;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 /**
  *
@@ -15,6 +17,7 @@ public class ByteArrayDecoder implements IMessage, ICommands {
 
     byte[] byteArray = null;
     GreenHouse gh = new GreenHouse();
+    private int returnData;
 
     protected byte[] answer = new byte[125];
 
@@ -36,58 +39,90 @@ public class ByteArrayDecoder implements IMessage, ICommands {
         byte[] data;
         byte[] result = this.getResult();
         int dataSize = result[SIZE];
+        int intValue = 0;
 
         data = new byte[dataSize];
         for (int i = 0; i < dataSize; i++) {
             data[i] = result[DATA_START + i];
         }
+        
+        for (int i = 0; i < 4; i++) {
+            intValue = (intValue << 8) - Byte.MIN_VALUE + (int) data[i];
+        }
+        
         if (dataSize == 0) {
             return 0;
         } else {
-            return Integer.parseInt(data.toString());
+            return intValue; //Integer.parseInt(data.toString());
         }
     }
 
-    public int decoder() {
+    public byte[] decoder() {
+        for (int i = 9; i <= 15; i++) {
+            if (i == byteArray[COMMAND] || i == 17) {
+                return this.readDecoder();
+            } else {
+                return this.setDecoder();
+            }
+        }
+        return byteArray;
+    }
+
+    private byte[] setDecoder() {
+//        switch (byteArray[COMMAND]) {
+//            case (NO_CMD):
+//                break;
+//            case (TEMP_SETPOINT):
+//                gh.SetTemperature(this.getResultData());
+//                break;
+//            case (MOIST_SETPOINT):
+//                gh.SetMoisture(this.getResultData());
+//                break;
+//            case (REDLIGHT_SETPOINT):
+//                gh.SetRedLight(this.getResultData());
+//                break;
+//            case (BLUELIGHT_SETPOINT):
+//                gh.SetBlueLight(this.getResultData());
+//                break;
+//            case (ADDWATER):
+//                gh.AddWater(this.getResultData());
+//                break;
+//            case (ADDFERTILISER):
+//                gh.AddFertiliser(this.getResultData());
+//                break;
+//            case (ADDCO2):
+//                gh.AddCO2(this.getResultData());
+//                break;
+//            case (SET_FAN_SPEED):
+//                gh.SetFanSpeed(this.getResultData());
+//                break;
+//        }
+        byteArray[COMMAND] += 64;
+        byteArray[DIRECTION] = 1;
+        return byteArray;
+    }
+
+    private byte[] readDecoder() {
         switch (byteArray[COMMAND]) {
-            case (NO_CMD):
-                break;
-            case (TEMP_SETPOINT):
-                gh.SetTemperature(this.getResultData());
-                break;
-            case (MOIST_SETPOINT):
-                gh.SetMoisture(this.getResultData());
-                break;
-            case (REDLIGHT_SETPOINT):
-                gh.SetRedLight(this.getResultData());
-                break;
-            case (BLUELIGHT_SETPOINT):
-                gh.SetBlueLight(this.getResultData());
-                break;
-            case (ADDWATER):
-                gh.AddWater(this.getResultData());
-                break;
-            case (ADDFERTILISER):
-                gh.AddFertiliser(this.getResultData());
-                break;
-            case (ADDCO2):
-                gh.AddCO2(this.getResultData());
-                break;
             case (READ_GREENHOUSE_TEMP):
-                return (int) gh.ReadTemp1();
+                returnData = (int) gh.ReadTemp1();
+                break;
             case (READ_OUTDOOR_TEMP):
-                return (int) gh.ReadTemp2();
+                returnData = (int) gh.ReadTemp2();
+                break;
             case (READ_MOISTURE):
-                return (int) gh.ReadMoist();
+                returnData = (int) gh.ReadMoist();
+                break;
             case (READ_PLANT_HEIGHT):
-                return (int) gh.ReadPlantHeight();
+                returnData = (int) gh.ReadPlantHeight();
+                break;
             case (GET_STATUS):
                 gh.GetStatus();
                 break;
-            case (SET_FAN_SPEED):
-                gh.SetFanSpeed(this.getResultData());
-                break;
         }
-        return 0;
+        byteArray[COMMAND] += 64;
+        byteArray[DIRECTION] = 1;
+        byteArray[DATA_START] += returnData;
+        return byteArray;
     }
 }
