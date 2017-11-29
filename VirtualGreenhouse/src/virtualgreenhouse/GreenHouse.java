@@ -68,8 +68,9 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
         }
     }
 
-    @Override
+    //@Override
     public boolean SetTemperature(int kelvin) {
+        /*
         // timeTemp keeps track of time needed for execution
         long timeTemp;
 
@@ -100,12 +101,15 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
                 temp1--;
             }
         }
+        */
+        temp1 = kelvin;
         return true;
     }
 
-    @Override
+    //@Override
     public boolean SetMoisture(int moist) {
         // timeTemp keeps track of time needed for execution
+        /*
         long timeTemp;
 
         boolean increaseMoisture = true;
@@ -135,6 +139,8 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
                 moisture--;
             }
         }
+        */
+        moisture = moist;
         return true;
     }
 
@@ -160,6 +166,7 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
 
     @Override
     public boolean AddWater(int sec) {
+        /*
         // timeStart checks time at start of execution
         long timeStart = dateChecker.getTime();
         // timeSinceExe is used to only execute at specific times later than timeStart
@@ -173,11 +180,14 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
                 waterLevel++;
             }
         }
+        */
+
         return true;
     }
 
     @Override
     public boolean AddFertiliser(int sec) {
+        /*
         // timeStart checks time at start of execution
         long timeStart = dateChecker.getTime();
         // timeSinceExe is used to only execute at specific times later than timeStart
@@ -191,11 +201,13 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
                 fertiliser++;
             }
         }
+        */
         return true;
     }
 
     @Override
     public boolean AddCO2(int sec) {
+        /*
         // timeStart checks time at start of execution
         long timeStart = dateChecker.getTime();
         // timeSinceExe is used to only execute at specific times later than timeStart
@@ -211,6 +223,7 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
                 }
             }
         }
+        */
         return true;
     }
 
