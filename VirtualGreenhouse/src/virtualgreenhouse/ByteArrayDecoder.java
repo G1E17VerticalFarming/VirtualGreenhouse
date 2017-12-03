@@ -69,34 +69,34 @@ public class ByteArrayDecoder implements IMessage, ICommands {
     }
 
     private byte[] setDecoder() {
-//        switch (byteArray[COMMAND]) {
-//            case (NO_CMD):
-//                break;
-//            case (TEMP_SETPOINT):
-//                gh.SetTemperature(this.getResultData());
-//                break;
-//            case (MOIST_SETPOINT):
-//                gh.SetMoisture(this.getResultData());
-//                break;
-//            case (REDLIGHT_SETPOINT):
-//                gh.SetRedLight(this.getResultData());
-//                break;
-//            case (BLUELIGHT_SETPOINT):
-//                gh.SetBlueLight(this.getResultData());
-//                break;
-//            case (ADDWATER):
-//                gh.AddWater(this.getResultData());
-//                break;
-//            case (ADDFERTILISER):
-//                gh.AddFertiliser(this.getResultData());
-//                break;
-//            case (ADDCO2):
-//                gh.AddCO2(this.getResultData());
-//                break;
-//            case (SET_FAN_SPEED):
-//                gh.SetFanSpeed(this.getResultData());
-//                break;
-//        }
+        switch (byteArray[COMMAND]) {
+            case (NO_CMD):
+                break;
+            case (TEMP_SETPOINT):
+                gh.SetTemperature(this.getResultData());
+                break;
+            case (MOIST_SETPOINT):
+                gh.SetMoisture(this.getResultData());
+                break;
+            case (REDLIGHT_SETPOINT):
+                gh.SetRedLight(this.getResultData());
+                break;
+            case (BLUELIGHT_SETPOINT):
+                gh.SetBlueLight(this.getResultData());
+                break;
+            case (ADDWATER):
+                gh.AddWater(this.getResultData());
+                break;
+            case (ADDFERTILISER):
+                gh.AddFertiliser(this.getResultData());
+                break;
+            case (ADDCO2):
+                gh.AddCO2(this.getResultData());
+                break;
+            case (SET_FAN_SPEED):
+                gh.SetFanSpeed(this.getResultData());
+                break;
+        }
         byteArray[COMMAND] += 64;
         byteArray[DIRECTION] = 1;
         return byteArray;

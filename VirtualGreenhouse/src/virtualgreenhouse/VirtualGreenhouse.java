@@ -30,7 +30,6 @@ public class VirtualGreenhouse implements IMessage, ICommands {
         VirtualGreenhouse vgh = new VirtualGreenhouse();
         Queue<byte[]> queue = new ConcurrentLinkedQueue<>();
         Queue<DatagramPacket> packetQueue = new ConcurrentLinkedQueue<>();
-        ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
         GreenHouse greenhouse = new GreenHouse().getInstance();
         greenhouse.askForPort();
