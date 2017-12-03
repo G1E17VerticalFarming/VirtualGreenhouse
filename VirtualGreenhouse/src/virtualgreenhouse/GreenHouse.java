@@ -51,96 +51,119 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
     }
 
     private void GrowthRate() {
-        // timeStart checks time at start of execution
-        long timeStart = dateChecker.getTime();
-        // timeSinceExe is used to only execute at specific times later than timeStart
-        long timeSinceExe = dateChecker.getTime();
+        Thread growthRate = new Thread(() -> {
+            // timeStart checks time at start of execution
+                long timeStart = dateChecker.getTime();
+                // timeSinceExe is used to only execute at specific times later than timeStart
+                long timeSinceExe = dateChecker.getTime();
 
-        while (plantHeight < 30) {
-            if (timeSinceExe >= timeSinceExe && fertiliser < 1) {
-                timeSinceExe += 60000;
-                plantHeight++;
-            } else if (timeSinceExe >= timeSinceExe && fertiliser >= 50) {
-                timeSinceExe += 30000;
-                plantHeight++;
-                fertiliser--;
+            while (plantHeight < 30) {
+                if (timeSinceExe >= timeSinceExe && fertiliser < 1) {
+                    timeSinceExe += 60000;
+                    plantHeight++;
+                } else if (timeSinceExe >= timeSinceExe && fertiliser >= 50) {
+                    timeSinceExe += 30000;
+                    plantHeight++;
+                    fertiliser--;
+                }
             }
-        }
+        });
+        growthRate.start();
     }
 
     //@Override
     public boolean SetTemperature(int kelvin) {
-        /*
-        // timeTemp keeps track of time needed for execution
-        long timeTemp;
-
-        boolean increaseTemp = true;
-
-        // Check if kelvin is higher or lower than current temp
-        if (kelvin > temp1) {
-            timeTemp = ((int) kelvin - (int) temp1);
-        } else {
-            timeTemp = ((int) temp1 - (int) kelvin);
-            increaseTemp = false;
-        }
-
-        // timeStart checks time at start of execution
-        long timeStart = dateChecker.getTime();
-        // timeSinceExe is used to only execute at specific times later than timeStart
-        long timeSinceExe = dateChecker.getTime();
-        // finishTime is when the execution should be done
-        long finishTime = timeStart + (timeTemp * 1000);
-
-        // While timeStart is lower than finishTime, execute and increase/decrease
-        while (timeStart <= finishTime) {
-            if (increaseTemp && dateChecker.getTime() >= timeSinceExe) {
-                timeSinceExe += 1000;
-                temp1++;
-            } else if (!increaseTemp && dateChecker.getTime() >= timeSinceExe) {
-                timeSinceExe += 1000;
-                temp1--;
+        Thread temperatureThread = new Thread(() -> {
+            // timeTemp keeps track of time needed for execution
+            long timeTemp;
+            boolean increaseTemp = true;
+            // Check if kelvin is higher or lower than current temp
+            if (kelvin > temp1) {
+                timeTemp = ((int) kelvin - (int) temp1);
+            } else {
+                timeTemp = ((int) temp1 - (int) kelvin);
+                increaseTemp = false;
             }
-        }
-        */
-        temp1 = kelvin;
+
+            // timeStart checks time at start of execution
+            long timeStart = dateChecker.getTime();
+            // timeSinceExe is used to only execute at specific times later than timeStart
+            long timeSinceExe = dateChecker.getTime();
+            // finishTime is when the execution should be done
+            long finishTime = timeStart + (timeTemp * 1000);
+
+            // While timeStart is lower than finishTime, execute and increase/decrease
+            while (timeStart <= finishTime) {
+                if (increaseTemp && dateChecker.getTime() >= timeSinceExe) {
+                    timeSinceExe += 1000;
+                    temp1++;
+                } else if (!increaseTemp && dateChecker.getTime() >= timeSinceExe) {
+                    timeSinceExe += 1000;
+                    temp1--;
+                }
+            }
+        });
+        new Thread(() -> {
+            if (temperatureThread.isAlive()) {
+                try {
+                    temperatureThread.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                temperatureThread.start();
+            } else {
+                temperatureThread.start();
+            }
+        });
         return true;
     }
 
     //@Override
     public boolean SetMoisture(int moist) {
-        // timeTemp keeps track of time needed for execution
-        /*
-        long timeTemp;
+        Thread moistureThread = new Thread(() -> {
+            // timeTemp keeps track of time needed for execution
+            long timeTemp;
 
-        boolean increaseMoisture = true;
+            boolean increaseMoisture = true;
 
-        // Check if moist is higher or lower than current moisture
-        if (moist > moisture) {
-            timeTemp = ((int) moist - (int) moisture);
-        } else {
-            timeTemp = ((int) moisture - (int) moist);
-            increaseMoisture = false;
-        }
-
-        // timeStart checks time at start of execution
-        long timeStart = dateChecker.getTime();
-        // timeSinceExe is used to only execute at specific times later than timeStart
-        long timeSinceExe = dateChecker.getTime();
-        // finishTime is when the execution should be done
-        long finishTime = timeStart + (timeTemp * 1000);
-
-        // While timeStart is lower than finishTime, execute and increase/decrease
-        while (timeStart <= finishTime) {
-            if (increaseMoisture && dateChecker.getTime() >= timeSinceExe) {
-                timeSinceExe += 1000;
-                moisture++;
-            } else if (!increaseMoisture && dateChecker.getTime() >= timeSinceExe) {
-                timeSinceExe += 1000;
-                moisture--;
+            // Check if moist is higher or lower than current moisture
+            if (moist > moisture) {
+                timeTemp = ((int) moist - (int) moisture);
+            } else {
+                timeTemp = ((int) moisture - (int) moist);
+                increaseMoisture = false;
             }
-        }
-        */
-        moisture = moist;
+
+            // timeStart checks time at start of execution
+            long timeStart = dateChecker.getTime();
+            // timeSinceExe is used to only execute at specific times later than timeStart
+            long timeSinceExe = dateChecker.getTime();
+            // finishTime is when the execution should be done
+            long finishTime = timeStart + (timeTemp * 1000);
+
+            // While timeStart is lower than finishTime, execute and increase/decrease
+            while (timeStart <= finishTime) {
+                if (increaseMoisture && dateChecker.getTime() >= timeSinceExe) {
+                    timeSinceExe += 1000;
+                    moisture++;
+                } else if (!increaseMoisture && dateChecker.getTime() >= timeSinceExe) {
+                    timeSinceExe += 1000;
+                    moisture--;
+                }
+            }
+        });
+        new Thread(() -> {
+            if (moistureThread.isAlive()) {
+                try {
+                    moistureThread.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                moistureThread.start();
+            } else {
+                moistureThread.start();
+            }
+        });
         return true;
     }
 
@@ -166,89 +189,92 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
 
     @Override
     public boolean AddWater(int sec) {
-        /*
-        // timeStart checks time at start of execution
-        long timeStart = dateChecker.getTime();
-        // timeSinceExe is used to only execute at specific times later than timeStart
-        long timeSinceExe = dateChecker.getTime();
-        // finishTime is when the execution should be done
-        long finishTime = timeStart + (sec * 1000);
+        Thread waterThread = new Thread(() -> {
+            // timeStart checks time at start of execution
+            long timeStart = dateChecker.getTime();
+            // timeSinceExe is used to only execute at specific times later than timeStart
+            long timeSinceExe = dateChecker.getTime();
+            // finishTime is when the execution should be done
+            long finishTime = timeStart + (sec * 1000);
 
-        while (timeStart <= finishTime) {
-            if (dateChecker.getTime() >= timeSinceExe) {
-                timeSinceExe += 1000;
-                waterLevel++;
+            while (timeStart <= finishTime) {
+                if (dateChecker.getTime() >= timeSinceExe) {
+                    timeSinceExe += 1000;
+                    waterLevel++;
+                }
             }
-        }
-        */
-
+        });
+        waterThread.start();
         return true;
     }
 
     @Override
     public boolean AddFertiliser(int sec) {
-        /*
-        // timeStart checks time at start of execution
-        long timeStart = dateChecker.getTime();
-        // timeSinceExe is used to only execute at specific times later than timeStart
-        long timeSinceExe = dateChecker.getTime();
-        // finishTime is when the execution should be done
-        long finishTime = timeStart + (sec * 1000);
+        Thread fertilizerThread = new Thread(() -> {
+            // timeStart checks time at start of execution
+            long timeStart = dateChecker.getTime();
+            // timeSinceExe is used to only execute at specific times later than timeStart
+            long timeSinceExe = dateChecker.getTime();
+            // finishTime is when the execution should be done
+            long finishTime = timeStart + (sec * 1000);
 
-        while (timeStart <= finishTime) {
-            if (dateChecker.getTime() >= timeSinceExe) {
-                timeSinceExe += 1000;
-                fertiliser++;
+            while (timeStart <= finishTime) {
+                if (dateChecker.getTime() >= timeSinceExe) {
+                    timeSinceExe += 1000;
+                    fertiliser++;
+                }
             }
-        }
-        */
+        });
         return true;
     }
 
     @Override
     public boolean AddCO2(int sec) {
-        /*
-        // timeStart checks time at start of execution
-        long timeStart = dateChecker.getTime();
-        // timeSinceExe is used to only execute at specific times later than timeStart
-        long timeSinceExe = dateChecker.getTime();
-        // finishTime is when the execution should be done
-        long finishTime = timeStart + (sec * 1000);
+        Thread CO2Thread = new Thread(() -> {
+            // timeStart checks time at start of execution
+            long timeStart = dateChecker.getTime();
+            // timeSinceExe is used to only execute at specific times later than timeStart
+            long timeSinceExe = dateChecker.getTime();
+            // finishTime is when the execution should be done
+            long finishTime = timeStart + (sec * 1000);
 
-        while (timeStart <= finishTime) {
-            if (dateChecker.getTime() >= timeSinceExe) {
-                timeSinceExe += 1000;
-                if (co2Level < 100) {
-                    co2Level++;
+            while (timeStart <= finishTime) {
+                if (dateChecker.getTime() >= timeSinceExe) {
+                    timeSinceExe += 1000;
+                    if (co2Level < 100) {
+                        co2Level++;
+                    }
                 }
             }
+        });
+        if (!CO2Thread.isAlive()) {
+            CO2Thread.start();
         }
-        */
         return true;
     }
 
     @Override
-    public double ReadTemp1() {
+    public synchronized double ReadTemp1() {
         return temp1;
     }
 
     @Override
-    public double ReadTemp2() {
+    public synchronized double ReadTemp2() {
         return temp2;
     }
 
     @Override
-    public double ReadMoist() {
+    public synchronized double ReadMoist() {
         return moisture;
     }
 
     @Override
-    public double ReadWaterLevel() {
+    public synchronized double ReadWaterLevel() {
         return waterLevel;
     }
 
     @Override
-    public double ReadPlantHeight() {
+    public synchronized double ReadPlantHeight() {
         return plantHeight;
     }
 
@@ -272,7 +298,7 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
         if (speed < 100 || speed > 0) {
             return false;
         } else {
-            this.fanSpeed = speed;
+            fanSpeed = speed;
             return true;
         }
     }
