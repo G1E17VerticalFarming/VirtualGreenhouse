@@ -40,7 +40,7 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
     private int blueLightLevel = 0;
     private int redLightLevel = 0;
 
-    private Date dateChecker;
+    private Date dateChecker = new Date();
 
     private static GreenHouse greenhouse = new GreenHouse();
 
@@ -307,10 +307,10 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
     public void askForPort() {
         String prompt;
         JFrame frame = new JFrame("InputDialog Example #1");
-        prompt = JOptionPane.showInputDialog(frame, "Which port do you wish to connect to?");
+        prompt = JOptionPane.showInputDialog(frame, "Which port do you wish to connect to?",5000);
 
         if ((Integer.parseInt(prompt) < 1024 || Integer.parseInt(prompt) > 65536)) {
-            System.out.println("Something whent wrong, please try again, and this time input a valid port");
+            System.out.println("Something went wrong, please try again, and this time input a valid port");
             askForPort();
         }
         this.port = Integer.parseInt(prompt);

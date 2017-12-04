@@ -36,24 +36,26 @@ public class ByteArrayDecoder implements IMessage, ICommands {
      * @return data embedded in answer
      */
     public int getResultData() {
-        byte[] data;
+        int data;
         byte[] result = this.getResult();
         int dataSize = result[SIZE];
         int intValue = 0;
-
+        /*
         data = new byte[dataSize];
         for (int i = 0; i < dataSize; i++) {
-            data[i] = result[DATA_START + i];
+            data = result[DATA_START + i];
         }
-        
-        for (int i = 0; i < 4; i++) {
+
+        for (int i = 0; i <= 4; i++) {
             intValue = (intValue << 8) - Byte.MIN_VALUE + (int) data[i];
         }
-        
+        */
+        data = result[DATA_START];
         if (dataSize == 0) {
             return 0;
         } else {
-            return intValue; //Integer.parseInt(data.toString());
+            //return intValue; //Integer.parseInt(data.toString());
+            return data;
         }
     }
 
