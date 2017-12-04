@@ -59,7 +59,6 @@ public class VirtualGreenhouse implements IMessage, ICommands {
 
         while (true) {
                 if (!queue.isEmpty()) {
-                    System.out.println(queue.isEmpty());
                     try {
                         ByteArrayDecoder bad = new ByteArrayDecoder(queue.poll());
                         byte[] returnData = bad.decoder();

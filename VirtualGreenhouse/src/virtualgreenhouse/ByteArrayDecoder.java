@@ -113,7 +113,9 @@ public class ByteArrayDecoder implements IMessage, ICommands {
                 returnData = (int) gh.ReadTemp2();
                 break;
             case (READ_MOISTURE):
+
                 returnData = (int) gh.ReadMoist();
+                System.out.println("Decoder moisture: " + returnData);
                 break;
             case (READ_PLANT_HEIGHT):
                 returnData = (int) gh.ReadPlantHeight();

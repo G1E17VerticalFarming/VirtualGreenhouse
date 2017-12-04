@@ -18,6 +18,7 @@ import java.net.SocketException;
 import java.util.BitSet;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.Timer;
 
 
 /**
@@ -42,8 +43,11 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
 
     private Date dateChecker = new Date();
 
-    private static GreenHouse greenhouse = new GreenHouse();
+    private GreenHouse() {
+        this.GrowthRate();
+    }
 
+    private static GreenHouse greenhouse = new GreenHouse();
 
     public static GreenHouse getInstance() throws SocketException {
         greenhouse.setIp();
@@ -52,6 +56,7 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
 
     private void GrowthRate() {
         Thread growthRate = new Thread(() -> {
+            /*
             // timeStart checks time at start of execution
                 long timeStart = dateChecker.getTime();
                 // timeSinceExe is used to only execute at specific times later than timeStart
@@ -69,11 +74,42 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
             }
         });
         growthRate.start();
+        */
+            new java.util.Timer().scheduleAtFixedRate(
+                    new java.util.TimerTask() {
+                        @Override
+                        public void run() {
+                            plantHeight++;
+                        }
+
+                    },
+                    10000, 10000
+            );
+
+        });
     }
 
     //@Override
     public boolean SetTemperature(int kelvin) {
-        Thread temperatureThread = new Thread(() -> {
+        //Thread temperatureThread = new Thread(() -> {
+
+        new java.util.Timer().scheduleAtFixedRate(
+                new java.util.TimerTask() {
+                    @Override
+                    public void run() {
+                        if (temp1 < kelvin) {
+                            temp1++;
+                        }
+                        else {
+                            this.cancel();
+                        }
+                    }
+                },
+                1000, 1000
+        );
+
+
+            /*
             // timeTemp keeps track of time needed for execution
             long timeTemp;
             boolean increaseTemp = true;
@@ -97,11 +133,15 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
                 if (increaseTemp && dateChecker.getTime() >= timeSinceExe) {
                     timeSinceExe += 1000;
                     temp1++;
+                    System.out.println(temp1);
                 } else if (!increaseTemp && dateChecker.getTime() >= timeSinceExe) {
                     timeSinceExe += 1000;
                     temp1--;
+                    System.out.println(temp1);
                 }
             }
+            */
+            /*
         });
         new Thread(() -> {
             if (temperatureThread.isAlive()) {
@@ -114,12 +154,15 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
             } else {
                 temperatureThread.start();
             }
-        });
+        });.start();
+        */
         return true;
+
     }
 
     //@Override
     public boolean SetMoisture(int moist) {
+        /*
         Thread moistureThread = new Thread(() -> {
             // timeTemp keeps track of time needed for execution
             long timeTemp;
@@ -164,6 +207,21 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
                 moistureThread.start();
             }
         });
+        */
+        new java.util.Timer().scheduleAtFixedRate(
+                new java.util.TimerTask() {
+                    @Override
+                    public void run() {
+                        if (moisture < moist) {
+                            moisture++;
+                        } else {
+                            this.cancel();
+                        }
+                    }
+                },
+                1000, 1000
+        );
+
         return true;
     }
 
@@ -189,6 +247,24 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
 
     @Override
     public boolean AddWater(int sec) {
+        int counter = 0;
+        new java.util.Timer().scheduleAtFixedRate(
+                new java.util.TimerTask() {
+                    @Override
+                    public void run() {
+                        if (counter <= sec) {
+                            waterLevel++;
+                        }
+                        else {
+                            this.cancel();
+                        }
+                    }
+
+                },
+                1000, 1000
+        );
+
+        /*
         Thread waterThread = new Thread(() -> {
             // timeStart checks time at start of execution
             long timeStart = dateChecker.getTime();
@@ -205,11 +281,29 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
             }
         });
         waterThread.start();
+        */
         return true;
     }
 
     @Override
     public boolean AddFertiliser(int sec) {
+        int counter = 0;
+        new java.util.Timer().scheduleAtFixedRate(
+                new java.util.TimerTask() {
+                    @Override
+                    public void run() {
+                        if (counter <= sec) {
+                            fertiliser++;
+                        }
+                        else {
+                            this.cancel();
+                        }
+                    }
+
+                },
+                1000, 1000
+        );
+        /*
         Thread fertilizerThread = new Thread(() -> {
             // timeStart checks time at start of execution
             long timeStart = dateChecker.getTime();
@@ -225,11 +319,29 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
                 }
             }
         });
+        */
         return true;
     }
 
     @Override
     public boolean AddCO2(int sec) {
+        int counter = 0;
+        new java.util.Timer().scheduleAtFixedRate(
+                new java.util.TimerTask() {
+                    @Override
+                    public void run() {
+                        if (counter <= sec) {
+                            co2Level++;
+                        }
+                        else {
+                            this.cancel();
+                        }
+                    }
+
+                },
+                1000, 1000
+        );
+        /*
         Thread CO2Thread = new Thread(() -> {
             // timeStart checks time at start of execution
             long timeStart = dateChecker.getTime();
@@ -250,11 +362,13 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
         if (!CO2Thread.isAlive()) {
             CO2Thread.start();
         }
+        */
         return true;
     }
 
     @Override
     public synchronized double ReadTemp1() {
+        System.out.println("Temp1: " + temp1);
         return temp1;
     }
 
@@ -265,6 +379,7 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
 
     @Override
     public synchronized double ReadMoist() {
+        System.out.println("Moisture: " + moisture);
         return moisture;
     }
 
