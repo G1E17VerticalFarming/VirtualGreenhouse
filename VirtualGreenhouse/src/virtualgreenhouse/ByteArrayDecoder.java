@@ -60,15 +60,13 @@ public class ByteArrayDecoder implements IMessage, ICommands {
     }
 
     public byte[] decoder() {
-        for (int i = 9; i <= 15; i++) {
-            if (i == byteArray[COMMAND] || i == 17) {
+            if ((byteArray[COMMAND] > 8 && byteArray[COMMAND] < 15) || byteArray[COMMAND] == 17) {
                 return this.readDecoder();
             } else {
                 return this.setDecoder();
             }
+
         }
-        return byteArray;
-    }
 
     private byte[] setDecoder() {
         switch (byteArray[COMMAND]) {
@@ -105,15 +103,16 @@ public class ByteArrayDecoder implements IMessage, ICommands {
     }
 
     private byte[] readDecoder() {
+        System.out.println(byteArray[COMMAND]);
         switch (byteArray[COMMAND]) {
             case (READ_GREENHOUSE_TEMP):
                 returnData = (int) gh.ReadTemp1();
+                System.out.println("Decoder temp" + returnData);
                 break;
             case (READ_OUTDOOR_TEMP):
                 returnData = (int) gh.ReadTemp2();
                 break;
             case (READ_MOISTURE):
-
                 returnData = (int) gh.ReadMoist();
                 System.out.println("Decoder moisture: " + returnData);
                 break;

@@ -43,7 +43,7 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
 
     private Date dateChecker = new Date();
 
-    private GreenHouse() {
+    public GreenHouse() {
         this.GrowthRate();
     }
 
@@ -92,22 +92,19 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
     //@Override
     public boolean SetTemperature(int kelvin) {
         //Thread temperatureThread = new Thread(() -> {
-
-        new java.util.Timer().scheduleAtFixedRate(
+        new Thread(() -> new Timer().scheduleAtFixedRate(
                 new java.util.TimerTask() {
                     @Override
                     public void run() {
                         if (temp1 < kelvin) {
                             temp1++;
-                        }
-                        else {
+                        } else {
                             this.cancel();
                         }
                     }
                 },
                 1000, 1000
-        );
-
+        )).start();
 
             /*
             // timeTemp keeps track of time needed for execution
