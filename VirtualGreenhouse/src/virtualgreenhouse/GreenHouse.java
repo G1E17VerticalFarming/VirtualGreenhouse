@@ -15,10 +15,9 @@ import java.beans.PropertyChangeListener;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.util.BitSet;
-import java.util.Date;
-import java.util.Enumeration;
+import java.util.*;
 import java.util.Timer;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
@@ -27,8 +26,9 @@ import java.util.Timer;
 public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeListener {
 
     private double temp1 = 11;
-    private double temp2 = 26;
-    private double moisture = 72;
+    private double temp2 = 21;
+    AtomicInteger desiredTemp = new AtomicInteger();
+    private double moisture = 45;
     private double waterLevel = 0;
     private int co2Level = 0;
     private double plantHeight = 0.0;
@@ -36,6 +36,7 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
     private int fertiliser = 0;
     private int port = 0;
     private String ip;
+    private boolean heatingElement;
 
     // light level
     private int blueLightLevel = 0;
@@ -44,7 +45,7 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
     private Date dateChecker = new Date();
 
     public GreenHouse() {
-        this.GrowthRate();
+        initialize();
     }
 
     private static GreenHouse greenhouse = new GreenHouse();
@@ -54,163 +55,94 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
         return greenhouse;
     }
 
-    private void GrowthRate() {
-        Thread growthRate = new Thread(() -> {
-            /*
-            // timeStart checks time at start of execution
-                long timeStart = dateChecker.getTime();
-                // timeSinceExe is used to only execute at specific times later than timeStart
-                long timeSinceExe = dateChecker.getTime();
-
-            while (plantHeight < 30) {
-                if (timeSinceExe >= timeSinceExe && fertiliser < 1) {
-                    timeSinceExe += 60000;
-                    plantHeight++;
-                } else if (timeSinceExe >= timeSinceExe && fertiliser >= 50) {
-                    timeSinceExe += 30000;
-                    plantHeight++;
-                    fertiliser--;
-                }
-            }
-        });
-        growthRate.start();
-        */
-            new java.util.Timer().scheduleAtFixedRate(
-                    new java.util.TimerTask() {
-                        @Override
-                        public void run() {
-                            plantHeight++;
-                        }
-
-                    },
-                    10000, 10000
-            );
-
-        });
-    }
-
-    //@Override
-    public boolean SetTemperature(int kelvin) {
-        //Thread temperatureThread = new Thread(() -> {
-        new Thread(() -> new Timer().scheduleAtFixedRate(
-                new java.util.TimerTask() {
+    /**
+     * The initialize method schedules the timers that should always be active.
+     */
+    private void initialize() {
+        /*
+        The natureTimer is responsible for the simulated natural decay.
+         */
+        Timer natureTimer = new Timer();
+        natureTimer.scheduleAtFixedRate(
+                new TimerTask() {
                     @Override
                     public void run() {
-                        if (temp1 < kelvin) {
-                            temp1++;
+                        plantHeight++;
+                        if (temp1 > temp2) { //If the indoor temperature is higher than the outdoor temperature the temperature drops
+                            temp1-=0.5;
+                        }
+                        fertiliser--; //Natural decay of fertilizer
+                        if (temp1<25) { //Natural decay of moisture depending on temperature
+                            moisture--;
+                            waterLevel-=0.1;
                         } else {
-                            this.cancel();
+                            moisture-=2;
+                            waterLevel-=0.2;
+                        }
+                        if (waterLevel>3) {
+                            moisture+=waterLevel/4;
+                        }
+                        if (heatingElement) { // If the heating element is on, the temperature indoors will increase.
+                            temp1++;
+                        }
+                        if (fanSpeed==1) { // The faster the fanspeed, the faster the temperature will drop.
+                            temp1--;
+                        }
+                        else if (fanSpeed==2) {
+                            temp1-=2;
                         }
                     }
-                },
-                1000, 1000
-        )).start();
-
-            /*
-            // timeTemp keeps track of time needed for execution
-            long timeTemp;
-            boolean increaseTemp = true;
-            // Check if kelvin is higher or lower than current temp
-            if (kelvin > temp1) {
-                timeTemp = ((int) kelvin - (int) temp1);
-            } else {
-                timeTemp = ((int) temp1 - (int) kelvin);
-                increaseTemp = false;
-            }
-
-            // timeStart checks time at start of execution
-            long timeStart = dateChecker.getTime();
-            // timeSinceExe is used to only execute at specific times later than timeStart
-            long timeSinceExe = dateChecker.getTime();
-            // finishTime is when the execution should be done
-            long finishTime = timeStart + (timeTemp * 1000);
-
-            // While timeStart is lower than finishTime, execute and increase/decrease
-            while (timeStart <= finishTime) {
-                if (increaseTemp && dateChecker.getTime() >= timeSinceExe) {
-                    timeSinceExe += 1000;
-                    temp1++;
-                    System.out.println(temp1);
-                } else if (!increaseTemp && dateChecker.getTime() >= timeSinceExe) {
-                    timeSinceExe += 1000;
-                    temp1--;
-                    System.out.println(temp1);
-                }
-            }
-            */
-            /*
-        });
-        new Thread(() -> {
-            if (temperatureThread.isAlive()) {
-                try {
-                    temperatureThread.join();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                temperatureThread.start();
-            } else {
-                temperatureThread.start();
-            }
-        });.start();
-        */
+                },10000,10000
+        );
+        /*
+        tempTimer adjusts the temperature to match the desired temperature.
+        This should always be on, since the real PLC would also try to adjust its temperature to the last desired temperature.
+         */
+        Timer tempTimer = new Timer();
+        tempTimer.scheduleAtFixedRate(
+                        new java.util.TimerTask() {
+                            @Override
+                            public void run() {
+                                if (temp1 < desiredTemp.intValue()) {
+                                    SetHeatingElement(true);
+                                    SetFanSpeed(0);
+                                } else if (temp1 > desiredTemp.intValue()) {
+                                    SetFanSpeed(1);
+                                    SetHeatingElement(false);
+                                }
+                            }
+                        },
+                        5000, 5000
+                );
+    }
+    
+    /**
+     * SetTemperature takes kelvin input, and sets the desired temperature
+     * desiredTemp is an AtomicInterger, which is read by the tempTimer
+     * @param kelvin
+     * @return
+     */
+    @Override
+    public boolean SetTemperature(int kelvin) {
+        desiredTemp.set(kelvin);
         return true;
-
     }
 
-    //@Override
+    /**
+     * SetMoisture is redundant. use AddWater() instead.
+     * @param moist
+     * @return
+     */
+    @Override
     public boolean SetMoisture(int moist) {
-        /*
-        Thread moistureThread = new Thread(() -> {
-            // timeTemp keeps track of time needed for execution
-            long timeTemp;
-
-            boolean increaseMoisture = true;
-
-            // Check if moist is higher or lower than current moisture
-            if (moist > moisture) {
-                timeTemp = ((int) moist - (int) moisture);
-            } else {
-                timeTemp = ((int) moisture - (int) moist);
-                increaseMoisture = false;
-            }
-
-            // timeStart checks time at start of execution
-            long timeStart = dateChecker.getTime();
-            // timeSinceExe is used to only execute at specific times later than timeStart
-            long timeSinceExe = dateChecker.getTime();
-            // finishTime is when the execution should be done
-            long finishTime = timeStart + (timeTemp * 1000);
-
-            // While timeStart is lower than finishTime, execute and increase/decrease
-            while (timeStart <= finishTime) {
-                if (increaseMoisture && dateChecker.getTime() >= timeSinceExe) {
-                    timeSinceExe += 1000;
-                    moisture++;
-                } else if (!increaseMoisture && dateChecker.getTime() >= timeSinceExe) {
-                    timeSinceExe += 1000;
-                    moisture--;
-                }
-            }
-        });
-        new Thread(() -> {
-            if (moistureThread.isAlive()) {
-                try {
-                    moistureThread.join();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                moistureThread.start();
-            } else {
-                moistureThread.start();
-            }
-        });
-        */
         new java.util.Timer().scheduleAtFixedRate(
                 new java.util.TimerTask() {
                     @Override
                     public void run() {
                         if (moisture < moist) {
                             moisture++;
+                        } else if (moisture > moist) {
+                            moisture--;
                         } else {
                             this.cancel();
                         }
@@ -222,6 +154,12 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
         return true;
     }
 
+
+    /**
+     *
+     * @param level
+     * @return
+     */
     @Override
     public boolean SetRedLight(int level) {
         if (level < 100 || level > 0) {
@@ -232,6 +170,11 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
         }
     }
 
+    /**
+     *
+     * @param level
+     * @return
+     */
     @Override
     public boolean SetBlueLight(int level) {
         if (level < 100 || level > 0) {
@@ -242,15 +185,22 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
         }
     }
 
+    /**
+     *The timer in AddWater, AddFertilizer and AddCO2 should not always be running, since a new scheduled timer
+     * has to be started every time the methods are called.
+     * @param sec
+     * @return
+     */
     @Override
     public boolean AddWater(int sec) {
-        int counter = 0;
+        int[] counter = new int[0];
         new java.util.Timer().scheduleAtFixedRate(
                 new java.util.TimerTask() {
                     @Override
                     public void run() {
-                        if (counter <= sec) {
+                        if (counter[0] <= sec) {
                             waterLevel++;
+                            counter[0]+=1;
                         }
                         else {
                             this.cancel();
@@ -260,37 +210,24 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
                 },
                 1000, 1000
         );
-
-        /*
-        Thread waterThread = new Thread(() -> {
-            // timeStart checks time at start of execution
-            long timeStart = dateChecker.getTime();
-            // timeSinceExe is used to only execute at specific times later than timeStart
-            long timeSinceExe = dateChecker.getTime();
-            // finishTime is when the execution should be done
-            long finishTime = timeStart + (sec * 1000);
-
-            while (timeStart <= finishTime) {
-                if (dateChecker.getTime() >= timeSinceExe) {
-                    timeSinceExe += 1000;
-                    waterLevel++;
-                }
-            }
-        });
-        waterThread.start();
-        */
         return true;
     }
 
+    /**
+     * See AddWater()
+     * @param sec
+     * @return
+     */
     @Override
     public boolean AddFertiliser(int sec) {
-        int counter = 0;
+        int[] counter = new int[0];
         new java.util.Timer().scheduleAtFixedRate(
                 new java.util.TimerTask() {
                     @Override
                     public void run() {
-                        if (counter <= sec) {
+                        if (counter[0] <= sec) {
                             fertiliser++;
+                            counter[0]+=1;
                         }
                         else {
                             this.cancel();
@@ -300,35 +237,24 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
                 },
                 1000, 1000
         );
-        /*
-        Thread fertilizerThread = new Thread(() -> {
-            // timeStart checks time at start of execution
-            long timeStart = dateChecker.getTime();
-            // timeSinceExe is used to only execute at specific times later than timeStart
-            long timeSinceExe = dateChecker.getTime();
-            // finishTime is when the execution should be done
-            long finishTime = timeStart + (sec * 1000);
-
-            while (timeStart <= finishTime) {
-                if (dateChecker.getTime() >= timeSinceExe) {
-                    timeSinceExe += 1000;
-                    fertiliser++;
-                }
-            }
-        });
-        */
         return true;
     }
 
+    /**
+     * See AddWater()
+     * @param sec
+     * @return
+     */
     @Override
     public boolean AddCO2(int sec) {
-        int counter = 0;
+        int[] counter = new int[0];
         new java.util.Timer().scheduleAtFixedRate(
                 new java.util.TimerTask() {
                     @Override
                     public void run() {
-                        if (counter <= sec) {
+                        if (counter[0] <= sec) {
                             co2Level++;
+                            counter[0]+=1;
                         }
                         else {
                             this.cancel();
@@ -338,76 +264,17 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
                 },
                 1000, 1000
         );
-        /*
-        Thread CO2Thread = new Thread(() -> {
-            // timeStart checks time at start of execution
-            long timeStart = dateChecker.getTime();
-            // timeSinceExe is used to only execute at specific times later than timeStart
-            long timeSinceExe = dateChecker.getTime();
-            // finishTime is when the execution should be done
-            long finishTime = timeStart + (sec * 1000);
-
-            while (timeStart <= finishTime) {
-                if (dateChecker.getTime() >= timeSinceExe) {
-                    timeSinceExe += 1000;
-                    if (co2Level < 100) {
-                        co2Level++;
-                    }
-                }
-            }
-        });
-        if (!CO2Thread.isAlive()) {
-            CO2Thread.start();
-        }
-        */
         return true;
     }
 
-    @Override
-    public synchronized double ReadTemp1() {
-        System.out.println("Temp1: " + temp1);
-        return temp1;
-    }
-
-    @Override
-    public synchronized double ReadTemp2() {
-        return temp2;
-    }
-
-    @Override
-    public synchronized double ReadMoist() {
-        System.out.println("Moisture: " + moisture);
-        return moisture;
-    }
-
-    @Override
-    public synchronized double ReadWaterLevel() {
-        return waterLevel;
-    }
-
-    @Override
-    public synchronized double ReadPlantHeight() {
-        return plantHeight;
-    }
-
-    @Override
-    public BitSet ReadErrors() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public boolean ResetError(int errorNum) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public byte[] GetStatus() {
-        return new byte[1];
-    }
-
+    /**
+     *
+     * @param speed
+     * @return
+     */
     @Override
     public boolean SetFanSpeed(int speed) {
-        if (speed < 100 || speed > 0) {
+        if (speed < 0 || speed > 2) {
             return false;
         } else {
             fanSpeed = speed;
@@ -415,6 +282,86 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
         }
     }
 
+    /**
+     * Turns on or off the heating element
+     * @param b
+     */
+    public void SetHeatingElement(boolean b) {
+        heatingElement = b;
+    }
+
+    /**
+     *
+     * @return
+     */
+    @Override
+    public synchronized double ReadTemp1() {
+        return temp1;
+    }
+
+    /**
+     *
+     * @return
+     */
+    @Override
+    public synchronized double ReadTemp2() {
+        return temp2;
+    }
+
+    /**
+     *
+     * @return
+     */
+    @Override
+    public synchronized double ReadMoist() {
+        return moisture;
+    }
+
+    /**
+     *
+     * @return
+     */
+    @Override
+    public synchronized double ReadWaterLevel() {
+        return waterLevel;
+    }
+
+    /**
+     *
+     * @return
+     */
+    @Override
+    public synchronized double ReadPlantHeight() {
+        return plantHeight;
+    }
+
+    /**
+     *
+     * @return
+     */
+    @Override
+    public BitSet ReadErrors() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    /**
+     *
+     * @param errorNum
+     * @return
+     */
+    @Override
+    public boolean ResetError(int errorNum) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    /**
+     *
+     * @return
+     */
+    @Override
+    public byte[] GetStatus() {
+        return new byte[1];
+    }
 
     public void askForPort() {
         String prompt;
