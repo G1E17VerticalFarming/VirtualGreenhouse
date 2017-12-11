@@ -203,14 +203,15 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
      */
     @Override
     public boolean AddWater(int sec) {
-        int[] counter = new int[0];
+        AtomicInteger counter = new AtomicInteger();
+        counter.set(0);
         new java.util.Timer().scheduleAtFixedRate(
                 new java.util.TimerTask() {
                     @Override
                     public void run() {
-                        if (counter[0] <= sec) {
+                        if (counter.intValue() <= sec) {
                             waterLevel++;
-                            counter[0]+=1;
+                            counter.set(counter.intValue()+1);
                         }
                         else {
                             this.cancel();
