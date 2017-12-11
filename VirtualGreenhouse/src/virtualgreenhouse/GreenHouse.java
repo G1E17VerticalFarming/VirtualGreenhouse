@@ -67,17 +67,26 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
                 new TimerTask() {
                     @Override
                     public void run() {
-                        plantHeight++;
+                        if(fertiliser<3) {
+                            plantHeight++;
+                        } else {
+                            plantHeight+=2;
+                        }
                         if (temp1 > temp2) { //If the indoor temperature is higher than the outdoor temperature the temperature drops
                             temp1-=0.5;
                         }
+                        else if(temp1 < temp2) {
+                            temp1+=0.5;
+                        }
                         fertiliser--; //Natural decay of fertilizer
-                        if (temp1<25) { //Natural decay of moisture depending on temperature
-                            moisture--;
-                            waterLevel-=0.1;
-                        } else {
-                            moisture-=2;
-                            waterLevel-=0.2;
+                        if(moisture>0) {
+                            if (temp1 < 25) { //Natural decay of moisture depending on temperature
+                                moisture--;
+                                waterLevel -= 0.1;
+                            } else {
+                                moisture -= 2;
+                                waterLevel -= 0.2;
+                            }
                         }
                         if (waterLevel>3) {
                             moisture+=waterLevel/4;
@@ -115,7 +124,7 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
                         5000, 5000
                 );
     }
-    
+
     /**
      * SetTemperature takes kelvin input, and sets the desired temperature
      * desiredTemp is an AtomicInterger, which is read by the tempTimer
@@ -135,6 +144,7 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
      */
     @Override
     public boolean SetMoisture(int moist) {
+        /*
         new java.util.Timer().scheduleAtFixedRate(
                 new java.util.TimerTask() {
                     @Override
@@ -150,7 +160,7 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
                 },
                 1000, 1000
         );
-
+        */
         return true;
     }
 
