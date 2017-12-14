@@ -79,7 +79,7 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
                             temp1+=0.5;
                         }
                         fertiliser--; //Natural decay of fertilizer
-                        if(moisture>0) {
+                        if(moisture>0 || moisture<100) {
                             if (temp1 < 25) { //Natural decay of moisture depending on temperature
                                 moisture--;
                                 waterLevel -= 0.1;
@@ -92,7 +92,7 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
                             moisture+=waterLevel/4;
                         }
                         if (heatingElement) { // If the heating element is on, the temperature indoors will increase.
-                            temp1++;
+                            temp1+=2;
                         }
                         if (fanSpeed==1) { // The faster the fanspeed, the faster the temperature will drop.
                             temp1--;
