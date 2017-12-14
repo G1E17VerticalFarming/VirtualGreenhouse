@@ -62,6 +62,7 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
         /*
         The natureTimer is responsible for the simulated natural decay.
          */
+        desiredTemp.set((int) temp2);
         Timer natureTimer = new Timer();
         natureTimer.scheduleAtFixedRate(
                 new TimerTask() {
