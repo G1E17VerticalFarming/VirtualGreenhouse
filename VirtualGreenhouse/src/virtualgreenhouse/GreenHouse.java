@@ -5,7 +5,7 @@
  */
 package virtualgreenhouse;
 
-import API.IGreenhouse;
+import interfaces.IGreenhouse;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
