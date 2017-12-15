@@ -5,9 +5,9 @@
  */
 package virtualgreenhouse;
 
+import interfaces.ICommands;
+import interfaces.IMessage;
 import java.net.SocketException;
-import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 /**
  *
