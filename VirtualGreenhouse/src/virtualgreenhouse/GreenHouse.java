@@ -27,22 +27,17 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
 
     private double temp1 = 11;
     private double temp2 = 21;
-    AtomicInteger desiredTemp = new AtomicInteger();
+    private AtomicInteger desiredTemp = new AtomicInteger();
     private double moisture = 45;
     private double waterLevel = 0;
-    private int co2Level = 0;
     private double plantHeight = 0.0;
     private int fanSpeed = 0;
     private int fertiliser = 0;
-    private int port = 0;
-    private String ip;
     private boolean heatingElement;
-
-    // light level
     private int blueLightLevel = 0;
     private int redLightLevel = 0;
-
-    private Date dateChecker = new Date();
+    private int port = 0;
+    private String ip;
 
     public GreenHouse() {
         initialize();
@@ -57,12 +52,13 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
 
     /**
      * The initialize method schedules the timers that should always be active.
+     * The natureTimer is responsible for the simulated natural decay. All variables can be changed to match the wanted simulation, speed or experiment.
+     * tempTimer adjusts the temperature to match the desired temperature. This should always be on, since the real PLC would also try to adjust its temperature to the last desired temperature.
      */
     private void initialize() {
         /*
-        The natureTimer is responsible for the simulated natural decay.
          */
-        desiredTemp.set((int) temp2);
+        desiredTemp.set((int) temp2); // Sets the initial wanted temperature to match the outdoor temperature, until a command to set the temperature is received.
         Timer natureTimer = new Timer();
         natureTimer.scheduleAtFixedRate(
                 new TimerTask() {
@@ -73,15 +69,15 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
                         } else {
                             plantHeight+=2;
                         }
-                        if (temp1 > temp2) { //If the indoor temperature is higher than the outdoor temperature the temperature drops
+                        if (temp1 > temp2) { // If the indoor temperature is higher than the outdoor temperature the temperature drops
                             temp1-=0.5;
                         }
                         else if(temp1 < temp2) {
                             temp1+=0.5;
                         }
-                        fertiliser--; //Natural decay of fertilizer
+                        fertiliser--; // Natural decay of fertilizer
                         if(moisture>0) {
-                            if (temp1 < 25) { //Natural decay of moisture depending on temperature
+                            if (temp1 < 25) { // Natural decay of moisture depending on temperature
                                 moisture--;
                                 waterLevel -= 0.1;
                             } else {
@@ -95,7 +91,7 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
                         if (heatingElement) { // If the heating element is on, the temperature indoors will increase.
                             temp1+=2;
                         }
-                        if (fanSpeed==1) { // The faster the fanspeed, the faster the temperature will drop.
+                        if (fanSpeed==1) { // The faster the fan-speed, the faster the temperature will drop.
                             temp1--;
                         }
                         else if (fanSpeed==2) {
@@ -104,10 +100,6 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
                     }
                 },10000,10000
         );
-        /*
-        tempTimer adjusts the temperature to match the desired temperature.
-        This should always be on, since the real PLC would also try to adjust its temperature to the last desired temperature.
-         */
         Timer tempTimer = new Timer();
         tempTimer.scheduleAtFixedRate(
                         new java.util.TimerTask() {
@@ -130,7 +122,7 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
      * SetTemperature takes kelvin input, and sets the desired temperature
      * desiredTemp is an AtomicInterger, which is read by the tempTimer
      * @param kelvin
-     * @return
+     * @return bool representing whether the command was executed or not
      */
     @Override
     public boolean SetTemperature(int kelvin) {
@@ -139,44 +131,16 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
     }
 
     /**
-     * SetMoisture is redundant. use AddWater() instead.
-     * @param moist
-     * @return
-     */
-    @Override
-    public boolean SetMoisture(int moist) {
-        /*
-        new java.util.Timer().scheduleAtFixedRate(
-                new java.util.TimerTask() {
-                    @Override
-                    public void run() {
-                        if (moisture < moist) {
-                            moisture++;
-                        } else if (moisture > moist) {
-                            moisture--;
-                        } else {
-                            this.cancel();
-                        }
-                    }
-                },
-                1000, 1000
-        );
-        */
-        return true;
-    }
-
-
-    /**
      *
      * @param level
-     * @return
+     * @return bool representing whether the command was executed or not
      */
     @Override
     public boolean SetRedLight(int level) {
         if (level < 100 || level > 0) {
             return false;
         } else {
-            this.redLightLevel = level;
+            redLightLevel = level;
             return true;
         }
     }
@@ -184,23 +148,23 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
     /**
      *
      * @param level
-     * @return
+     * @return bool representing whether the command was executed or not
      */
     @Override
     public boolean SetBlueLight(int level) {
         if (level < 100 || level > 0) {
             return false;
         } else {
-            this.blueLightLevel = level;
+            blueLightLevel = level;
             return true;
         }
     }
 
     /**
-     *The timer in AddWater, AddFertilizer and AddCO2 should not always be running, since a new scheduled timer
+     *The timer in AddWater and AddFertilizer should not always be running, since a new scheduled timer
      * has to be started every time the methods are called.
      * @param sec
-     * @return
+     * @return bool representing whether the command was executed or not
      */
     @Override
     public boolean AddWater(int sec) {
@@ -228,7 +192,7 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
     /**
      * See AddWater()
      * @param sec
-     * @return
+     * @return bool representing whether the command was executed or not
      */
     @Override
     public boolean AddFertiliser(int sec) {
@@ -253,36 +217,9 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
     }
 
     /**
-     * See AddWater()
-     * @param sec
-     * @return
-     */
-    @Override
-    public boolean AddCO2(int sec) {
-        int[] counter = new int[0];
-        new java.util.Timer().scheduleAtFixedRate(
-                new java.util.TimerTask() {
-                    @Override
-                    public void run() {
-                        if (counter[0] <= sec) {
-                            co2Level++;
-                            counter[0]+=1;
-                        }
-                        else {
-                            this.cancel();
-                        }
-                    }
-
-                },
-                1000, 1000
-        );
-        return true;
-    }
-
-    /**
      *
      * @param speed
-     * @return
+     * @return bool representing whether the command was executed or not
      */
     @Override
     public boolean SetFanSpeed(int speed) {
@@ -298,13 +235,13 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
      * Turns on or off the heating element
      * @param b
      */
-    public void SetHeatingElement(boolean b) {
+    private void SetHeatingElement(boolean b) {
         heatingElement = b;
     }
 
     /**
-     *
-     * @return
+     * Returns indoor temperature
+     * @return temp1
      */
     @Override
     public synchronized double ReadTemp1() {
@@ -312,8 +249,8 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
     }
 
     /**
-     *
-     * @return
+     * Returns outdoor temperature
+     * @return temp2
      */
     @Override
     public synchronized double ReadTemp2() {
@@ -321,8 +258,8 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
     }
 
     /**
-     *
-     * @return
+     * Returns moisture
+     * @return moisture
      */
     @Override
     public synchronized double ReadMoist() {
@@ -330,8 +267,8 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
     }
 
     /**
-     *
-     * @return
+     * Returns water level
+     * @return waterLevel
      */
     @Override
     public synchronized double ReadWaterLevel() {
@@ -339,8 +276,8 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
     }
 
     /**
-     *
-     * @return
+     * Returns plant height
+     * @return plantHeight
      */
     @Override
     public synchronized double ReadPlantHeight() {
@@ -349,32 +286,7 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
 
     /**
      *
-     * @return
      */
-    @Override
-    public BitSet ReadErrors() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    /**
-     *
-     * @param errorNum
-     * @return
-     */
-    @Override
-    public boolean ResetError(int errorNum) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    /**
-     *
-     * @return
-     */
-    @Override
-    public byte[] GetStatus() {
-        return new byte[1];
-    }
-
     public void askForPort() {
         String prompt;
         JFrame frame = new JFrame("InputDialog Example #1");
@@ -388,7 +300,10 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
 
     }
 
-
+    /**
+     *
+     * @return
+     */
     public int getPort() {
         return this.port;
     }
@@ -407,9 +322,14 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
         }
     }
 
+    /**
+     *
+     * @return
+     */
     public String getIp() {
         return ip;
     }
+
 
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -418,6 +338,31 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public boolean SetMoisture(int i) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public BitSet ReadErrors() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public boolean ResetError(int i) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public byte[] GetStatus() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public boolean AddCO2(int sec) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

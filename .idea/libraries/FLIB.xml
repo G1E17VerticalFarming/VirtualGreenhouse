@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="FLIB">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/VirtualGreenhouse/FLIB.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
