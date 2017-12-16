@@ -1,31 +1,24 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package virtualgreenhouse;
 
 import interfaces.ICommands;
 import interfaces.IMessage;
+
 import java.net.SocketException;
 
-/**
- *
- * @author mads
- */
 public class ByteArrayDecoder implements IMessage, ICommands {
 
     byte[] byteArray = null;
     GreenHouse gh = new GreenHouse();
     private int returnData;
 
-    protected byte[] answer = new byte[125];
-
     public ByteArrayDecoder(byte[] byteArray) throws SocketException {
         this.byteArray = byteArray;
         gh = GreenHouse.getInstance();
     }
 
+    /**
+     * @return
+     */
     public byte[] getResult() {
         return byteArray;
     }
@@ -39,35 +32,29 @@ public class ByteArrayDecoder implements IMessage, ICommands {
         int data;
         byte[] result = this.getResult();
         int dataSize = result[SIZE];
-        int intValue = 0;
-        /*
-        data = new byte[dataSize];
-        for (int i = 0; i < dataSize; i++) {
-            data = result[DATA_START + i];
-        }
-
-        for (int i = 0; i <= 4; i++) {
-            intValue = (intValue << 8) - Byte.MIN_VALUE + (int) data[i];
-        }
-        */
         data = result[DATA_START];
         if (dataSize == 0) {
             return 0;
         } else {
-            //return intValue; //Integer.parseInt(data.toString());
             return data;
         }
     }
 
+    /**
+     * @return
+     */
     public byte[] decoder() {
-            if ((byteArray[COMMAND] > 8 && byteArray[COMMAND] < 15) || byteArray[COMMAND] == 17) {
-                return this.readDecoder();
-            } else {
-                return this.setDecoder();
-            }
-
+        if ((byteArray[COMMAND] > 8 && byteArray[COMMAND] < 15) || byteArray[COMMAND] == 17) {
+            return this.readDecoder();
+        } else {
+            return this.setDecoder();
         }
 
+    }
+
+    /**
+     * @return
+     */
     private byte[] setDecoder() {
         switch (byteArray[COMMAND]) {
             case (NO_CMD):
@@ -102,6 +89,10 @@ public class ByteArrayDecoder implements IMessage, ICommands {
         return byteArray;
     }
 
+    /**
+     *
+     * @return
+     */
     private byte[] readDecoder() {
         System.out.println(byteArray[COMMAND]);
         switch (byteArray[COMMAND]) {

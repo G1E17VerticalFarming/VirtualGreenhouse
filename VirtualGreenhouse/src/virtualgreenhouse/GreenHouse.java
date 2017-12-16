@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package virtualgreenhouse;
 
 import interfaces.IGreenhouse;
@@ -15,8 +10,10 @@ import java.beans.PropertyChangeListener;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.util.*;
+import java.util.BitSet;
+import java.util.Enumeration;
 import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
@@ -56,27 +53,25 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
      * tempTimer adjusts the temperature to match the desired temperature. This should always be on, since the real PLC would also try to adjust its temperature to the last desired temperature.
      */
     private void initialize() {
-        /*
-         */
+
         desiredTemp.set((int) temp2); // Sets the initial wanted temperature to match the outdoor temperature, until a command to set the temperature is received.
         Timer natureTimer = new Timer();
         natureTimer.scheduleAtFixedRate(
                 new TimerTask() {
                     @Override
                     public void run() {
-                        if(fertiliser<3) {
+                        if (fertiliser < 3) {
                             plantHeight++;
                         } else {
-                            plantHeight+=2;
+                            plantHeight += 2;
                         }
                         if (temp1 > temp2) { // If the indoor temperature is higher than the outdoor temperature the temperature drops
-                            temp1-=0.5;
-                        }
-                        else if(temp1 < temp2) {
-                            temp1+=0.5;
+                            temp1 -= 0.5;
+                        } else if (temp1 < temp2) {
+                            temp1 += 0.5;
                         }
                         fertiliser--; // Natural decay of fertilizer
-                        if(moisture>0) {
+                        if (moisture > 0) {
                             if (temp1 < 25) { // Natural decay of moisture depending on temperature
                                 moisture--;
                                 waterLevel -= 0.1;
@@ -85,42 +80,42 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
                                 waterLevel -= 0.2;
                             }
                         }
-                        if (waterLevel>3 && moisture<100) {
-                            moisture+=waterLevel/4;
+                        if (waterLevel > 3 && moisture < 100) {
+                            moisture += waterLevel / 4;
                         }
                         if (heatingElement) { // If the heating element is on, the temperature indoors will increase.
-                            temp1+=2;
+                            temp1 += 2;
                         }
-                        if (fanSpeed==1) { // The faster the fan-speed, the faster the temperature will drop.
+                        if (fanSpeed == 1) { // The faster the fan-speed, the faster the temperature will drop.
                             temp1--;
-                        }
-                        else if (fanSpeed==2) {
-                            temp1-=2;
+                        } else if (fanSpeed == 2) {
+                            temp1 -= 2;
                         }
                     }
-                },10000,10000
+                }, 10000, 10000
         );
         Timer tempTimer = new Timer();
         tempTimer.scheduleAtFixedRate(
-                        new java.util.TimerTask() {
-                            @Override
-                            public void run() {
-                                if (temp1 < desiredTemp.intValue()) {
-                                    SetHeatingElement(true);
-                                    SetFanSpeed(0);
-                                } else if (temp1 > desiredTemp.intValue()) {
-                                    SetFanSpeed(1);
-                                    SetHeatingElement(false);
-                                }
-                            }
-                        },
-                        5000, 5000
-                );
+                new java.util.TimerTask() {
+                    @Override
+                    public void run() {
+                        if (temp1 < desiredTemp.intValue()) {
+                            SetHeatingElement(true);
+                            SetFanSpeed(0);
+                        } else if (temp1 > desiredTemp.intValue()) {
+                            SetFanSpeed(1);
+                            SetHeatingElement(false);
+                        }
+                    }
+                },
+                5000, 5000
+        );
     }
 
     /**
      * SetTemperature takes kelvin input, and sets the desired temperature
      * desiredTemp is an AtomicInterger, which is read by the tempTimer
+     *
      * @param kelvin
      * @return bool representing whether the command was executed or not
      */
@@ -131,7 +126,6 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
     }
 
     /**
-     *
      * @param level
      * @return bool representing whether the command was executed or not
      */
@@ -146,7 +140,6 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
     }
 
     /**
-     *
      * @param level
      * @return bool representing whether the command was executed or not
      */
@@ -161,8 +154,9 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
     }
 
     /**
-     *The timer in AddWater and AddFertilizer should not always be running, since a new scheduled timer
+     * The timer in AddWater and AddFertilizer should not always be running, since a new scheduled timer
      * has to be started every time the methods are called.
+     *
      * @param sec
      * @return bool representing whether the command was executed or not
      */
@@ -176,9 +170,8 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
                     public void run() {
                         if (counter.intValue() <= sec) {
                             waterLevel++;
-                            counter.set(counter.intValue()+1);
-                        }
-                        else {
+                            counter.set(counter.intValue() + 1);
+                        } else {
                             this.cancel();
                         }
                     }
@@ -191,6 +184,7 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
 
     /**
      * See AddWater()
+     *
      * @param sec
      * @return bool representing whether the command was executed or not
      */
@@ -203,9 +197,8 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
                     public void run() {
                         if (counter[0] <= sec) {
                             fertiliser++;
-                            counter[0]+=1;
-                        }
-                        else {
+                            counter[0] += 1;
+                        } else {
                             this.cancel();
                         }
                     }
@@ -217,7 +210,6 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
     }
 
     /**
-     *
      * @param speed
      * @return bool representing whether the command was executed or not
      */
@@ -233,6 +225,7 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
 
     /**
      * Turns on or off the heating element
+     *
      * @param b
      */
     private void SetHeatingElement(boolean b) {
@@ -241,6 +234,7 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
 
     /**
      * Returns indoor temperature
+     *
      * @return temp1
      */
     @Override
@@ -250,6 +244,7 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
 
     /**
      * Returns outdoor temperature
+     *
      * @return temp2
      */
     @Override
@@ -259,6 +254,7 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
 
     /**
      * Returns moisture
+     *
      * @return moisture
      */
     @Override
@@ -268,6 +264,7 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
 
     /**
      * Returns water level
+     *
      * @return waterLevel
      */
     @Override
@@ -277,6 +274,7 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
 
     /**
      * Returns plant height
+     *
      * @return plantHeight
      */
     @Override
@@ -285,12 +283,12 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
     }
 
     /**
-     *
+     * method for prompting the user for a port. Used to set the port of the Greenhouse.
      */
     public void askForPort() {
         String prompt;
         JFrame frame = new JFrame("InputDialog Example #1");
-        prompt = JOptionPane.showInputDialog(frame, "Which port do you wish to connect to?",5000);
+        prompt = JOptionPane.showInputDialog(frame, "Which port do you wish to connect to?", 5000);
 
         if ((Integer.parseInt(prompt) < 1024 || Integer.parseInt(prompt) > 65536)) {
             System.out.println("Something went wrong, please try again, and this time input a valid port");
@@ -301,13 +299,16 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
     }
 
     /**
-     *
-     * @return
+     * @returns the port of the current Greenhouse as an int
      */
     public int getPort() {
         return this.port;
     }
 
+    /**
+     * This method sets the IP address of the Greenhouse to the currently active network interface of the computer it
+     * runs on. It filters out all bad or unusable addresses and only returns IPv4 addresses (excluding localhost)
+     */
     private void setIp() throws SocketException {
         Enumeration e = NetworkInterface.getNetworkInterfaces();
         while (e.hasMoreElements()) {
@@ -323,8 +324,7 @@ public class GreenHouse implements IGreenhouse, ActionListener, PropertyChangeLi
     }
 
     /**
-     *
-     * @return
+     * @returns the IP address of the current Greenhouse as a string
      */
     public String getIp() {
         return ip;
