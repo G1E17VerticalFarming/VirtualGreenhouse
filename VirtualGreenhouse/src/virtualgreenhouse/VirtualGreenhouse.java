@@ -26,7 +26,10 @@ public class VirtualGreenhouse implements IMessage, ICommands {
         DatagramSocket socket = new DatagramSocket(PORT);
 
         /**
-         *
+         * Runnable UDPConnection in the the main of VirtualGreenhouse.java:
+         * This thread starts a DatagramPacket, which receives packages from Scada.
+         * The received packet is added to a queue
+         * The accompanying packet-information to that packet is saved in another queue.
          */
         Runnable UDPConnection = () -> {
             while (true) {
@@ -49,6 +52,13 @@ public class VirtualGreenhouse implements IMessage, ICommands {
         Thread connection = new Thread(UDPConnection);
         connection.start();
 
+
+        /**
+         * While loop for calling methods in the ByteArrayDecoder
+         * Inside this loop the if statement checks if the queue mentioned in the UDPConnection is empty.
+         * If the queue is not empty a new instance of the ByteArrayDecoder is started with the accompanying poll from the queue.
+         * Once the decoder returns a new package, this is sent back to Scada with socket.send
+         */
         while (true) {
             if (!queue.isEmpty()) {
                 try {

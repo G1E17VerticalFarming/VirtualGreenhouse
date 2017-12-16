@@ -11,21 +11,26 @@ public class ByteArrayDecoder implements IMessage, ICommands {
     GreenHouse gh = new GreenHouse();
     private int returnData;
 
+    /**
+     * The constructor takes the parameteriezed bytearray and adds this as the current byteArray
+     * @param byteArray
+     * @throws SocketException
+     */
     public ByteArrayDecoder(byte[] byteArray) throws SocketException {
         this.byteArray = byteArray;
         gh = GreenHouse.getInstance();
     }
 
     /**
-     * @return
+     *
+     * @return byteArray
      */
-    public byte[] getResult() {
+    private byte[] getResult() {
         return byteArray;
     }
 
     /**
      * Get result data as raw bytes
-     *
      * @return data embedded in answer
      */
     public int getResultData() {
@@ -41,7 +46,9 @@ public class ByteArrayDecoder implements IMessage, ICommands {
     }
 
     /**
-     * @return
+     * The method decoder determines whether the incoming byteArray contains a set-command or read-command
+     * Thereafter the appropriate method is called.
+     * @return the bytearray that is to be returned from either the readDecoder or setDecoder
      */
     public byte[] decoder() {
         if ((byteArray[COMMAND] > 8 && byteArray[COMMAND] < 15) || byteArray[COMMAND] == 17) {
@@ -53,7 +60,11 @@ public class ByteArrayDecoder implements IMessage, ICommands {
     }
 
     /**
-     * @return
+     * This method is called when the incoming byteArray contains a set-command.
+     * The method contains a swtich-statement that checks which command the bytearray's command field is equal to.
+     * Before returning 64 is called to the command-field of the bytearray, to signal that the command was executed.
+     * The direction is changed to 1, to signal that the message is coming from PLC towards Scada.
+     * @return returning byteArray
      */
     private byte[] setDecoder() {
         switch (byteArray[COMMAND]) {
@@ -90,7 +101,11 @@ public class ByteArrayDecoder implements IMessage, ICommands {
     }
 
     /**
-     *
+     * This method is called when the incoming byteArray contains a read-command.
+     * The method contains a swtich-statement that checks which command the bytearray's command field is equal to.
+     * Before returning 64 is called to the command-field of the bytearray, to signal that the command was executed.
+     * The direction is changed to 1, to signal that the message is coming from PLC towards Scada.
+     * The returnData from the greenhouse-class is added to the data-field of the byteArray
      * @return
      */
     private byte[] readDecoder() {
